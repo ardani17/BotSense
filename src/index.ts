@@ -2,6 +2,8 @@ import { config } from 'dotenv';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import TelegramBot from 'node-telegram-bot-api';
+import { registerMenuCommand } from './commands/menu';
+import { sendNotRegistered } from './utils/messages';
 
 // Load environment variables
 config();
@@ -61,7 +63,6 @@ import { registerRarCommands } from './features/rar';
 import { registerWorkbookCommands } from './features/workbook';
 import { registerOcrCommands } from './features/ocr';
 import { registerKmlCommands } from './features/kml';
-import { registerMenuCommand } from './commands/menu';
 
 // Authentication middleware
 const isUserRegistered = (userId: number): boolean => {
@@ -109,11 +110,11 @@ const getUserMode = (userId: number): UserState['mode'] => {
 // Start the bot
 const startBot = (): void => {
   // Register global commands and middleware
-  bot.onText(/\/start/, (msg) => {
+  bot.onText(/^\/start(?:\s|$)/, (msg) => {
     const userId = msg.from?.id;
     
     if (!userId || !isUserRegistered(userId)) {
-      bot.sendMessage(msg.chat.id, 'Maaf, Anda tidak terdaftar untuk menggunakan bot ini.');
+      sendNotRegistered(bot, msg.chat.id, msg.from);
       return;
     }
     
@@ -192,12 +193,16 @@ const startBot = (): void => {
         text.startsWith('/cari') || text.startsWith('/extract-found') ||
         text.startsWith('/ukur') || text.startsWith('/ukur_motor') || text.startsWith('/ukur_mobil') ||
         text.startsWith('/batal') || text.startsWith('/ocr_clear') ||
-        text.startsWith('/tambah') || text.startsWith('/lihat') || text.startsWith('/hapus') || text.startsWith('/buat') || text.startsWith('/bantuan')) {
+        text.startsWith('/tambah') || text.startsWith('/lihat') || text.startsWith('/hapus') || text.startsWith('/buat') || text.startsWith('/bantuan') ||
+        // KML subcommands
+        text.startsWith('/startline') || text.startsWith('/endline') || text.startsWith('/cancelline') ||
+        text.startsWith('/add ') || text === '/add' || text.startsWith('/addpoint') || text.startsWith('/alwayspoint') ||
+        text.startsWith('/mydata') || text.startsWith('/createkml') || text.startsWith('/cleardata')) {
       return;
     }
     
     if (!userId || !isUserRegistered(userId)) {
-      bot.sendMessage(msg.chat.id, 'Maaf, Anda tidak terdaftar untuk menggunakan bot ini.');
+      sendNotRegistered(bot, msg.chat.id, msg.from);
       return;
     }
     

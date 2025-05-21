@@ -1074,11 +1074,7 @@ export const registerLocationCommands = (
     
     const currentMode = getUserMode(userId);
     if (currentMode !== 'location') {
-      bot.sendMessage(
-        msg.chat.id,
-        'Anda harus berada dalam mode Lokasi untuk menggunakan fitur ini. Ketik /lokasi untuk masuk ke mode Lokasi.'
-      );
-      return;
+      return; // Ignore location messages when not in location mode
     }
     
     if (!msg.location) {

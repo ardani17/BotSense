@@ -126,7 +126,8 @@ export const registerOcrCommands = (
     const chatId = msg.chat.id;
     
     if (!userId || !isUserRegistered(userId)) {
-      bot.sendMessage(chatId, 'Maaf, Anda tidak terdaftar untuk menggunakan bot ini.');
+      const displayName = msg.from?.first_name || msg.from?.username || 'Pengguna';
+      bot.sendMessage(chatId, `Maaf ${displayName} (${userId ?? 'unknown'}) Anda tidak terdaftar untuk menggunakan bot ini.`);
       return;
     }
     

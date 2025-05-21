@@ -107,7 +107,8 @@ export const registerWorkbookCommands = (
     const userId = msg.from?.id;
     
     if (!userId || !isUserRegistered(userId)) {
-      bot.sendMessage(msg.chat.id, 'Maaf, Anda tidak terdaftar untuk menggunakan bot ini.');
+      const displayName = msg.from?.first_name || msg.from?.username || 'Pengguna';
+      bot.sendMessage(msg.chat.id, `Maaf ${displayName} (${userId ?? 'unknown'}) Anda tidak terdaftar untuk menggunakan bot ini.`);
       return;
     }
     
