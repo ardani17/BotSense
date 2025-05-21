@@ -12,5 +12,5 @@ node_modules/
 # Ignore semua file dalam folder data
 data/*
 
-# Kecualikan folder data itu sendiri agar tetap ter-upload
+# Kecualikan folder data itu sendiri agar tetap ter-upload (folder kosong akan tetap ter-upload)
 !data/
