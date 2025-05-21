@@ -1,0 +1,478 @@
+import TelegramBot from 'node-telegram-bot-api';
+import axios from 'axios';
+import * as path from 'path';
+import * as fs from 'fs-extra';
+
+interface LocationCommandDependencies {
+  isUserRegistered: (userId: number) => boolean;
+  hasLocationAccess: (userId: number) => boolean;
+  getUserMode: (userId: number) => 'menu' | 'location' | 'rar' | null;
+  setUserMode: (userId: number, mode: 'menu' | 'location' | 'rar' | null) => void;
+  ensureUserDataDir: (userId: number) => string;
+}
+
+export const registerLocationCommands = (
+  bot: TelegramBot,
+  deps: LocationCommandDependencies
+): void => {
+  const { isUserRegistered, hasLocationAccess, getUserMode, setUserMode, ensureUserDataDir } = deps;
+
+  // Main location mode command
+  bot.onText(/\/lokasi/, (msg) => {
+    const userId = msg.from?.id;
+    
+    if (!userId || !isUserRegistered(userId)) {
+      bot.sendMessage(msg.chat.id, 'Maaf, Anda tidak terdaftar untuk menggunakan bot ini.');
+      return;
+    }
+    
+    if (!hasLocationAccess(userId)) {
+      bot.sendMessage(msg.chat.id, 'Maaf, Anda tidak memiliki akses ke fitur /lokasi.');
+      return;
+    }
+    
+    // Set user mode to location
+    setUserMode(userId, 'location');
+    
+    // Ensure location cache directory exists
+    const userDir = ensureUserDataDir(userId);
+    fs.ensureDirSync(path.join(userDir, 'lokasi_cache'));
+    
+    bot.sendMessage(
+      msg.chat.id,
+      'Anda sekarang dalam mode Lokasi. Perintah yang tersedia:\n' +
+      '/alamat [alamat] - Mendapatkan koordinat dari alamat\n' +
+      '/koordinat [lat] [long] - Mendapatkan alamat dari koordinat\n' +
+      '/show_map [lokasi] - Menampilkan peta lokasi\n\n' +
+      'Ketik /menu untuk kembali ke menu utama.\n\n' +
+      'Anda juga dapat:\n' +
+      '- Mengirim lokasi Telegram untuk mendapatkan koordinat dan alamat lengkap\n' +
+      '- Mengirim koordinat (contoh: -7.6382862, 112.7372882) untuk mendapatkan lokasi dan alamat'
+    );
+  });
+
+  // Get coordinates from address (simplified command)
+  bot.onText(/\/alamat (.+)/, async (msg, match) => {
+    const userId = msg.from?.id;
+    
+    if (!userId || !isUserRegistered(userId)) {
+      bot.sendMessage(msg.chat.id, 'Maaf, Anda tidak terdaftar untuk menggunakan bot ini.');
+      return;
+    }
+    
+    if (!hasLocationAccess(userId)) {
+      bot.sendMessage(msg.chat.id, 'Maaf, Anda tidak memiliki akses ke fitur lokasi.');
+      return;
+    }
+    
+    const currentMode = getUserMode(userId);
+    if (currentMode !== 'location') {
+      bot.sendMessage(
+        msg.chat.id,
+        'Anda harus berada dalam mode Lokasi untuk menggunakan perintah ini. Ketik /lokasi untuk masuk ke mode Lokasi.'
+      );
+      return;
+    }
+    
+    const address = match?.[1];
+    if (!address) {
+      bot.sendMessage(msg.chat.id, 'Silakan masukkan alamat yang valid.');
+      return;
+    }
+    
+    try {
+      bot.sendMessage(msg.chat.id, `Mencari koordinat untuk alamat: ${address}...`);
+      
+      // Using OpenStreetMap Nominatim API
+      const response = await axios.get('https://nominatim.openstreetmap.org/search', {
+        params: {
+          q: address,
+          format: 'json',
+          limit: 1
+        },
+        headers: {
+          'User-Agent': 'TelegramBot/1.0'
+        }
+      });
+      
+      if (response.data && response.data.length > 0) {
+        const location = response.data[0];
+        const { lat, lon, display_name } = location;
+        
+        // Save to user's location cache
+        const userDir = ensureUserDataDir(userId);
+        const cacheDir = path.join(userDir, 'lokasi_cache');
+        fs.ensureDirSync(cacheDir);
+        
+        const locationData = {
+          query: address,
+          result: {
+            latitude: lat,
+            longitude: lon,
+            display_name
+          },
+          timestamp: new Date().toISOString()
+        };
+        
+        const filename = `${Date.now()}_${address.replace(/[^a-z0-9]/gi, '_').substring(0, 30)}.json`;
+        fs.writeJsonSync(path.join(cacheDir, filename), locationData, { spaces: 2 });
+        
+        // Send location
+        bot.sendLocation(msg.chat.id, parseFloat(lat), parseFloat(lon));
+        
+        bot.sendMessage(
+          msg.chat.id,
+          `📍 Koordinat untuk "${display_name}":\n` +
+          `Latitude: ${lat}\n` +
+          `Longitude: ${lon}\n\n` +
+          `Untuk melihat di peta, ketik:\n` +
+          `/show_map ${lat},${lon}`
+        );
+      } else {
+        bot.sendMessage(msg.chat.id, 'Tidak dapat menemukan koordinat untuk alamat tersebut.');
+      }
+    } catch (error) {
+      console.error('Error fetching coordinates:', error);
+      bot.sendMessage(msg.chat.id, 'Terjadi kesalahan saat mencari koordinat. Silakan coba lagi nanti.');
+    }
+  });
+
+  // Get address from coordinates (simplified command)
+  bot.onText(/\/koordinat\s+(-?\d+\.?\d*)\s+(-?\d+\.?\d*)/, async (msg, match) => {
+    const userId = msg.from?.id;
+    
+    if (!userId || !isUserRegistered(userId)) {
+      bot.sendMessage(msg.chat.id, 'Maaf, Anda tidak terdaftar untuk menggunakan bot ini.');
+      return;
+    }
+    
+    if (!hasLocationAccess(userId)) {
+      bot.sendMessage(msg.chat.id, 'Maaf, Anda tidak memiliki akses ke fitur lokasi.');
+      return;
+    }
+    
+    const currentMode = getUserMode(userId);
+    if (currentMode !== 'location') {
+      bot.sendMessage(
+        msg.chat.id,
+        'Anda harus berada dalam mode Lokasi untuk menggunakan perintah ini. Ketik /lokasi untuk masuk ke mode Lokasi.'
+      );
+      return;
+    }
+    
+    const lat = match?.[1];
+    const lon = match?.[2];
+    
+    if (!lat || !lon) {
+      bot.sendMessage(msg.chat.id, 'Silakan masukkan koordinat yang valid.');
+      return;
+    }
+    
+    try {
+      bot.sendMessage(msg.chat.id, `Mencari alamat untuk koordinat: ${lat}, ${lon}...`);
+      
+      // Using OpenStreetMap Nominatim API for reverse geocoding
+      const response = await axios.get('https://nominatim.openstreetmap.org/reverse', {
+        params: {
+          lat,
+          lon,
+          format: 'json'
+        },
+        headers: {
+          'User-Agent': 'TelegramBot/1.0'
+        }
+      });
+      
+      if (response.data && response.data.display_name) {
+        const { display_name } = response.data;
+        
+        // Save to user's location cache
+        const userDir = ensureUserDataDir(userId);
+        const cacheDir = path.join(userDir, 'lokasi_cache');
+        fs.ensureDirSync(cacheDir);
+        
+        const locationData = {
+          query: `${lat},${lon}`,
+          result: {
+            latitude: lat,
+            longitude: lon,
+            display_name
+          },
+          timestamp: new Date().toISOString()
+        };
+        
+        const filename = `${Date.now()}_reverse_${lat}_${lon}.json`;
+        fs.writeJsonSync(path.join(cacheDir, filename), locationData, { spaces: 2 });
+        
+        // Send location
+        bot.sendLocation(msg.chat.id, parseFloat(lat), parseFloat(lon));
+        
+        bot.sendMessage(
+          msg.chat.id,
+          `📍 Alamat untuk koordinat (${lat}, ${lon}):\n` +
+          `${display_name}\n\n` +
+          `Untuk melihat di peta, ketik:\n` +
+          `/show_map ${lat},${lon}`
+        );
+      } else {
+        bot.sendMessage(msg.chat.id, 'Tidak dapat menemukan alamat untuk koordinat tersebut.');
+      }
+    } catch (error) {
+      console.error('Error fetching address:', error);
+      bot.sendMessage(msg.chat.id, 'Terjadi kesalahan saat mencari alamat. Silakan coba lagi nanti.');
+    }
+  });
+
+  // Show map for location
+  bot.onText(/\/show_map (.+)/, async (msg, match) => {
+    const userId = msg.from?.id;
+    
+    if (!userId || !isUserRegistered(userId)) {
+      bot.sendMessage(msg.chat.id, 'Maaf, Anda tidak terdaftar untuk menggunakan bot ini.');
+      return;
+    }
+    
+    if (!hasLocationAccess(userId)) {
+      bot.sendMessage(msg.chat.id, 'Maaf, Anda tidak memiliki akses ke fitur lokasi.');
+      return;
+    }
+    
+    const currentMode = getUserMode(userId);
+    if (currentMode !== 'location') {
+      bot.sendMessage(
+        msg.chat.id,
+        'Anda harus berada dalam mode Lokasi untuk menggunakan perintah ini. Ketik /lokasi untuk masuk ke mode Lokasi.'
+      );
+      return;
+    }
+    
+    const locationQuery = match?.[1];
+    if (!locationQuery) {
+      bot.sendMessage(msg.chat.id, 'Silakan masukkan lokasi yang valid.');
+      return;
+    }
+    
+    try {
+      // Check if the input is coordinates (lat,lon)
+      const coordsMatch = locationQuery.match(/^(-?\d+\.?\d*),\s*(-?\d+\.?\d*)$/);
+      
+      let lat: string, lon: string;
+      
+      if (coordsMatch) {
+        // Direct coordinates provided
+        lat = coordsMatch[1];
+        lon = coordsMatch[2];
+        
+        // Send location directly
+        bot.sendLocation(msg.chat.id, parseFloat(lat), parseFloat(lon));
+        
+        // Also send a link to OpenStreetMap
+        const osmUrl = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}&zoom=15`;
+        bot.sendMessage(
+          msg.chat.id,
+          `🗺️ Lihat di OpenStreetMap:\n${osmUrl}`
+        );
+      } else {
+        // Search for the location first
+        bot.sendMessage(msg.chat.id, `Mencari lokasi: ${locationQuery}...`);
+        
+        const response = await axios.get('https://nominatim.openstreetmap.org/search', {
+          params: {
+            q: locationQuery,
+            format: 'json',
+            limit: 1
+          },
+          headers: {
+            'User-Agent': 'TelegramBot/1.0'
+          }
+        });
+        
+        if (response.data && response.data.length > 0) {
+          const location = response.data[0];
+          lat = location.lat;
+          lon = location.lon;
+          
+          // Send location
+          bot.sendLocation(msg.chat.id, parseFloat(lat), parseFloat(lon));
+          
+          // Also send a link to OpenStreetMap
+          const osmUrl = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}&zoom=15`;
+          bot.sendMessage(
+            msg.chat.id,
+            `🗺️ ${location.display_name}\n\nLihat di OpenStreetMap:\n${osmUrl}`
+          );
+        } else {
+          bot.sendMessage(msg.chat.id, 'Tidak dapat menemukan lokasi tersebut.');
+        }
+      }
+    } catch (error) {
+      console.error('Error showing map:', error);
+      bot.sendMessage(msg.chat.id, 'Terjadi kesalahan saat menampilkan peta. Silakan coba lagi nanti.');
+    }
+  });
+
+  // Handle location messages from Telegram
+  bot.on('location', async (msg) => {
+    const userId = msg.from?.id;
+    
+    if (!userId || !isUserRegistered(userId)) {
+      bot.sendMessage(msg.chat.id, 'Maaf, Anda tidak terdaftar untuk menggunakan bot ini.');
+      return;
+    }
+    
+    if (!hasLocationAccess(userId)) {
+      bot.sendMessage(msg.chat.id, 'Maaf, Anda tidak memiliki akses ke fitur lokasi.');
+      return;
+    }
+    
+    const currentMode = getUserMode(userId);
+    if (currentMode !== 'location') {
+      bot.sendMessage(
+        msg.chat.id,
+        'Anda harus berada dalam mode Lokasi untuk menggunakan fitur ini. Ketik /lokasi untuk masuk ke mode Lokasi.'
+      );
+      return;
+    }
+    
+    if (!msg.location) {
+      bot.sendMessage(msg.chat.id, 'Lokasi tidak valid.');
+      return;
+    }
+    
+    const { latitude, longitude } = msg.location;
+    
+    try {
+      bot.sendMessage(msg.chat.id, `Mencari alamat untuk lokasi yang dikirim...`);
+      
+      // Using OpenStreetMap Nominatim API for reverse geocoding
+      const response = await axios.get('https://nominatim.openstreetmap.org/reverse', {
+        params: {
+          lat: latitude,
+          lon: longitude,
+          format: 'json'
+        },
+        headers: {
+          'User-Agent': 'TelegramBot/1.0'
+        }
+      });
+      
+      if (response.data && response.data.display_name) {
+        const { display_name } = response.data;
+        
+        // Save to user's location cache
+        const userDir = ensureUserDataDir(userId);
+        const cacheDir = path.join(userDir, 'lokasi_cache');
+        fs.ensureDirSync(cacheDir);
+        
+        const locationData = {
+          query: `${latitude},${longitude}`,
+          result: {
+            latitude,
+            longitude,
+            display_name
+          },
+          timestamp: new Date().toISOString()
+        };
+        
+        const filename = `${Date.now()}_location_${latitude}_${longitude}.json`;
+        fs.writeJsonSync(path.join(cacheDir, filename), locationData, { spaces: 2 });
+        
+        bot.sendMessage(
+          msg.chat.id,
+          `📍 Informasi Lokasi:\n` +
+          `Latitude: ${latitude}\n` +
+          `Longitude: ${longitude}\n\n` +
+          `Alamat: ${display_name}`
+        );
+      } else {
+        bot.sendMessage(
+          msg.chat.id,
+          `📍 Koordinat Lokasi:\n` +
+          `Latitude: ${latitude}\n` +
+          `Longitude: ${longitude}\n\n` +
+          `Tidak dapat menemukan alamat untuk koordinat tersebut.`
+        );
+      }
+    } catch (error) {
+      console.error('Error processing location message:', error);
+      bot.sendMessage(msg.chat.id, 'Terjadi kesalahan saat memproses lokasi. Silakan coba lagi nanti.');
+    }
+  });
+
+  // Handle direct coordinate input (e.g., "-7.6382862, 112.7372882")
+  bot.onText(/^(-?\d+\.?\d*),\s*(-?\d+\.?\d*)$/, async (msg, match) => {
+    const userId = msg.from?.id;
+    
+    if (!userId || !isUserRegistered(userId)) {
+      return; // Silently ignore for non-registered users
+    }
+    
+    if (!hasLocationAccess(userId)) {
+      return; // Silently ignore for users without location access
+    }
+    
+    const currentMode = getUserMode(userId);
+    if (currentMode !== 'location') {
+      return; // Only process in location mode
+    }
+    
+    const lat = match?.[1];
+    const lon = match?.[2];
+    
+    if (!lat || !lon) {
+      return;
+    }
+    
+    try {
+      bot.sendMessage(msg.chat.id, `Memproses koordinat: ${lat}, ${lon}...`);
+      
+      // Using OpenStreetMap Nominatim API for reverse geocoding
+      const response = await axios.get('https://nominatim.openstreetmap.org/reverse', {
+        params: {
+          lat,
+          lon,
+          format: 'json'
+        },
+        headers: {
+          'User-Agent': 'TelegramBot/1.0'
+        }
+      });
+      
+      if (response.data && response.data.display_name) {
+        const { display_name } = response.data;
+        
+        // Save to user's location cache
+        const userDir = ensureUserDataDir(userId);
+        const cacheDir = path.join(userDir, 'lokasi_cache');
+        fs.ensureDirSync(cacheDir);
+        
+        const locationData = {
+          query: `${lat},${lon}`,
+          result: {
+            latitude: lat,
+            longitude: lon,
+            display_name
+          },
+          timestamp: new Date().toISOString()
+        };
+        
+        const filename = `${Date.now()}_direct_coords_${lat}_${lon}.json`;
+        fs.writeJsonSync(path.join(cacheDir, filename), locationData, { spaces: 2 });
+        
+        // Send location
+        bot.sendLocation(msg.chat.id, parseFloat(lat), parseFloat(lon));
+        
+        bot.sendMessage(
+          msg.chat.id,
+          `📍 Alamat untuk koordinat (${lat}, ${lon}):\n` +
+          `${display_name}`
+        );
+      } else {
+        bot.sendMessage(msg.chat.id, 'Tidak dapat menemukan alamat untuk koordinat tersebut.');
+      }
+    } catch (error) {
+      console.error('Error processing coordinates:', error);
+      bot.sendMessage(msg.chat.id, 'Terjadi kesalahan saat memproses koordinat. Silakan coba lagi nanti.');
+    }
+  });
+};

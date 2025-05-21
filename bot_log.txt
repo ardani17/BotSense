@@ -1,0 +1,32 @@
+
+> telegram-bot-ts@1.0.0 start
+> node dist/index.js
+
+Bot started successfully!
+Unhandled rejection Error: ETELEGRAM: 400 Bad Request: can't parse entities: Can't find end of the entity starting at byte offset 394
+    at /home/ubuntu/telegram-bot-ts/node_modules/node-telegram-bot-api/src/telegram.js:299:15
+    at tryCatcher (/home/ubuntu/telegram-bot-ts/node_modules/bluebird/js/release/util.js:16:23)
+    at Promise._settlePromiseFromHandler (/home/ubuntu/telegram-bot-ts/node_modules/bluebird/js/release/promise.js:547:31)
+    at Promise._settlePromise (/home/ubuntu/telegram-bot-ts/node_modules/bluebird/js/release/promise.js:604:18)
+    at Promise._settlePromise0 (/home/ubuntu/telegram-bot-ts/node_modules/bluebird/js/release/promise.js:649:10)
+    at Promise._settlePromises (/home/ubuntu/telegram-bot-ts/node_modules/bluebird/js/release/promise.js:729:18)
+    at _drainQueueStep (/home/ubuntu/telegram-bot-ts/node_modules/bluebird/js/release/async.js:93:12)
+    at _drainQueue (/home/ubuntu/telegram-bot-ts/node_modules/bluebird/js/release/async.js:86:9)
+    at Async._drainQueues (/home/ubuntu/telegram-bot-ts/node_modules/bluebird/js/release/async.js:102:5)
+    at Async.drainQueues (/home/ubuntu/telegram-bot-ts/node_modules/bluebird/js/release/async.js:15:14)
+    at process.processImmediate (node:internal/timers:491:21)
+Unhandled rejection Error: ETELEGRAM: 400 Bad Request: can't parse entities: Can't find end of the entity starting at byte offset 394
+    at /home/ubuntu/telegram-bot-ts/node_modules/node-telegram-bot-api/src/telegram.js:299:15
+    at tryCatcher (/home/ubuntu/telegram-bot-ts/node_modules/bluebird/js/release/util.js:16:23)
+    at Promise._settlePromiseFromHandler (/home/ubuntu/telegram-bot-ts/node_modules/bluebird/js/release/promise.js:547:31)
+    at Promise._settlePromise (/home/ubuntu/telegram-bot-ts/node_modules/bluebird/js/release/promise.js:604:18)
+    at Promise._settlePromise0 (/home/ubuntu/telegram-bot-ts/node_modules/bluebird/js/release/promise.js:649:10)
+    at Promise._settlePromises (/home/ubuntu/telegram-bot-ts/node_modules/bluebird/js/release/promise.js:729:18)
+    at _drainQueueStep (/home/ubuntu/telegram-bot-ts/node_modules/bluebird/js/release/async.js:93:12)
+    at _drainQueue (/home/ubuntu/telegram-bot-ts/node_modules/bluebird/js/release/async.js:86:9)
+    at Async._drainQueues (/home/ubuntu/telegram-bot-ts/node_modules/bluebird/js/release/async.js:102:5)
+    at Async.drainQueues (/home/ubuntu/telegram-bot-ts/node_modules/bluebird/js/release/async.js:15:14)
+    at process.processImmediate (node:internal/timers:491:21)
+error: [polling_error] {"code":"EFATAL","message":"EFATAL: Error: read ECONNRESET"}
+error: [polling_error] {"code":"EFATAL","message":"EFATAL: Error: read ECONNRESET"}
+Killed
