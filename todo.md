@@ -22,6 +22,13 @@
   - [x] Mengekstrak teks dari gambar
   - [x] Menggunakan OCR dalam Bahasa Inggris
   - [x] Penanganan file gambar dan dokumen gambar
+- [x] Mode KML (/kml)
+  - [x] Menambahkan titik koordinat (melalui lokasi Telegram atau input manual)
+  - [x] Menetapkan nama untuk titik (satu kali atau tetap)
+  - [x] Membuat garis/jalur dari titik-titik
+  - [x] Melihat daftar titik dan garis yang telah ditambahkan
+  - [x] Membuat file KML dari titik-titik dan garis yang ditambahkan
+  - [x] Mengirim file KML ke pengguna
 
 ## Fitur yang Perlu Diperbaiki
 - [x] Fitur pengukuran jarak dan rute (/ukur)
@@ -30,13 +37,13 @@
   - [x] Implementasikan penanganan error yang lebih baik
   - [x] Tambahkan timeout untuk state pengukuran yang tidak selesai
   - [x] Perbaiki pesan error perintah tidak valid saat menggunakan /ukur, /ukur_motor dan /ukur_mobil di mode lokasi
+- [x] Fitur KML
+  - [x] Perbaiki format tag XML untuk memastikan kompatibilitas dengan aplikasi KML
+  - [x] Pastikan pengguna memiliki akses ke fitur KML melalui KML_ACCESS_USERS
+  - [x] Perbaiki penanganan perintah sub-KML dalam mode KML
+  - [x] Pastikan regex /start tidak bentrok dengan perintah /startline dari mode KML
 
 ## Fitur yang Perlu Ditambahkan
-- [ ] Mode KML (/kml) - DALAM PENGEMBANGAN
-  - [ ] Menambahkan titik koordinat (melalui lokasi Telegram atau input manual)
-  - [ ] Melihat daftar titik yang telah ditambahkan
-  - [ ] Membuat file KML dari titik-titik yang ditambahkan
-  - [ ] Mengirim file KML ke pengguna
 - [ ] Fitur pencadangan data pengguna
   - [ ] Implementasikan perintah untuk mencadangkan data pengguna
   - [ ] Implementasikan perintah untuk memulihkan data pengguna

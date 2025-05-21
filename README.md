@@ -1,6 +1,6 @@
 # Bot Telegram TypeScript
 
-Bot Telegram yang dibangun dengan TypeScript, menyediakan berbagai fitur seperti pencarian lokasi, pengukuran jarak, dan pengelolaan arsip (ZIP/RAR).
+Bot Telegram yang dibangun dengan TypeScript, menyediakan berbagai fitur seperti pencarian lokasi, pengukuran jarak, pengelolaan arsip (ZIP/RAR), workbook, OCR, dan KML.
 
 ## Daftar Isi
 - [Fitur](#fitur)
@@ -18,8 +18,6 @@ Bot Telegram yang dibangun dengan TypeScript, menyediakan berbagai fitur seperti
 - Autentikasi pengguna berdasarkan ID Telegram
 - Isolasi data klien berdasarkan ID Telegram
 - Manajemen mode (menu, lokasi, rar, workbook, ocr, kml)
-
-> **Status Pengembangan:** Fitur KML masih dalam tahap pengembangan dan belum berfungsi sepenuhnya.
 
 ### Mode Lokasi
 - Mendapatkan koordinat dari alamat
@@ -43,6 +41,46 @@ Bot Telegram yang dibangun dengan TypeScript, menyediakan berbagai fitur seperti
 - Menggunakan OCR dalam Bahasa Inggris
 - Mengenali teks, angka, dan simbol dalam gambar
 - Mudah digunakan tanpa konfigurasi tambahan
+
+### Mode KML
+
+1. Ketik `/kml` untuk masuk ke mode KML
+2. Perintah yang tersedia:
+   - **Titik Individual:**
+     - Kirim lokasi Telegram untuk menambahkan titik
+     - `/add <latitude> <longitude> [nama_titik]` untuk menambahkan titik manual
+     - `/addpoint <nama_titik>` untuk menetapkan nama untuk satu titik berikutnya
+     - `/alwayspoint [nama_titik]` untuk menetapkan nama default tetap (kosongkan untuk menghapus)
+   - **Garis/Jalur:**
+     - `/startline [nama_garis]` untuk memulai pembuatan garis
+     - `/endline` untuk menyimpan garis aktif
+     - `/cancelline` untuk membatalkan garis aktif
+   - **Data & KML:**
+     - `/mydata` untuk melihat semua titik dan garis yang disimpan
+     - `/createkml [nama_dokumen]` untuk membuat dan mengirimkan file KML
+     - `/cleardata` untuk menghapus semua data KML Anda
+   - `/help` untuk melihat daftar perintah yang tersedia
+
+#### Cara Penggunaan KML:
+
+1. **Menambahkan Titik:**
+   - Kirim lokasi via attachment Telegram
+   - Atau gunakan perintah `/add <latitude> <longitude> [nama_titik]`
+   - Nama titik ditentukan berdasarkan prioritas: nama di perintah `/add` > nama dari `/addpoint` > nama dari `/alwayspoint` > nama default
+
+2. **Membuat Garis/Jalur:**
+   - Mulai dengan `/startline [nama_garis]`
+   - Tambahkan titik-titik ke garis dengan mengirim lokasi atau menggunakan `/add`
+   - Setelah selesai, simpan garis dengan `/endline` (minimal 2 titik)
+   - Atau batalkan pembuatan garis dengan `/cancelline`
+
+3. **Melihat dan Mengelola Data:**
+   - Gunakan `/mydata` untuk melihat semua titik dan garis yang telah Anda simpan
+   - Gunakan `/cleardata` untuk menghapus semua data KML Anda
+
+4. **Membuat File KML:**
+   - Gunakan `/createkml [nama_dokumen_opsional]` untuk membuat dan mengirimkan file KML
+   - File KML dapat dibuka di aplikasi seperti Google Earth, QGIS, atau aplikasi GIS lainnya
 
 ## Persyaratan
 
@@ -153,18 +191,6 @@ KML_ACCESS_USERS=123456789,987654321
 2. Kirim gambar yang berisi teks untuk mengekstrak teksnya
 3. Perintah yang tersedia:
    - `/ocr_clear` - Menghapus semua file OCR yang disimpan
-
-### Mode KML (Dalam Pengembangan)
-
-> **Catatan:** Fitur KML masih dalam tahap pengembangan dan mungkin belum berfungsi dengan sempurna.
-
-1. Ketik `/kml` untuk masuk ke mode KML
-2. Perintah yang tersedia (akan diimplementasikan):
-   - Kirim lokasi Telegram untuk menambahkan titik
-   - Kirim "add [latitude],[longitude] [nama]" untuk menambahkan titik manual
-   - Kirim "list" untuk melihat semua titik yang sudah ditambahkan
-   - Kirim "clear" untuk menghapus semua titik
-   - Kirim "create" untuk membuat dan mengirimkan file KML
 
 ## Struktur Proyek
 
