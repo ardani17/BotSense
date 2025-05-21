@@ -8,3 +8,9 @@ node_modules/
 
 # Output folder
 /dist
+
+# Ignore semua file dalam folder data
+data/*
+
+# Kecualikan folder data itu sendiri agar tetap ter-upload
+!data/
