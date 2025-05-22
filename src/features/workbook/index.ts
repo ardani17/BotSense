@@ -286,7 +286,7 @@ export const registerWorkbookCommands = (
       }
       
       // Handle sheet name creation
-      if (msg.text && msg.text !== "clear" && msg.text !== "send" && msg.text !== "cek") {
+      if (msg.text && msg.text !== "clear" && msg.text !== "send" && msg.text !== "cek" && !msg.text.startsWith('/')) {
         const newFolderName = msg.text;
         state.newFolderPath = path.join(mediaFolderPath, newFolderName);
         
