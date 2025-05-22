@@ -22,6 +22,13 @@
   - [x] Mengekstrak teks dari gambar
   - [x] Menggunakan OCR dalam Bahasa Inggris
   - [x] Penanganan file gambar dan dokumen gambar
+- [x] Mode Geotags (/geotags)
+  - [x] Menambahkan geotag ke foto dengan lokasi
+  - [x] Mode AlwaysTag untuk lokasi menempel
+  - [x] Pengaturan waktu manual
+  - [x] Visualisasi lokasi dengan Mapbox
+  - [x] Format koordinat Decimal dan DMS
+  - [x] Optimasi kualitas gambar
 - [x] Mode KML (/kml)
   - [x] Menambahkan titik koordinat (melalui lokasi Telegram atau input manual)
   - [x] Menetapkan nama untuk titik (satu kali atau tetap)
@@ -42,6 +49,11 @@
   - [x] Pastikan pengguna memiliki akses ke fitur KML melalui KML_ACCESS_USERS
   - [x] Perbaiki penanganan perintah sub-KML dalam mode KML
   - [x] Pastikan regex /start tidak bentrok dengan perintah /startline dari mode KML
+- [x] Fitur Geotags
+  - [x] Perbaiki konflik antara mode AlwaysTag dan AlwaysPoint
+  - [x] Optimalkan penggunaan memori saat memproses gambar
+  - [x] Tambahkan validasi format waktu manual
+  - [x] Perbaiki penanganan error saat Mapbox API tidak tersedia
 
 ## Fitur yang Perlu Ditambahkan
 - [ ] Fitur pencadangan data pengguna
@@ -53,6 +65,11 @@
 - [ ] Fitur notifikasi
   - [ ] Implementasikan sistem notifikasi untuk admin
   - [ ] Implementasikan sistem notifikasi untuk pengguna
+- [ ] Peningkatan Fitur Geotags
+  - [ ] Tambahkan dukungan untuk watermark kustom
+  - [ ] Implementasikan batch processing untuk multiple foto
+  - [ ] Tambahkan opsi untuk mengatur ukuran geotag
+  - [ ] Implementasikan sistem cache untuk Mapbox API
 
 ## Perbaikan Teknis
 - [x] Gunakan environment variable untuk OCR API key

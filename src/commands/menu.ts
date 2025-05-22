@@ -7,14 +7,15 @@ interface MenuCommandDependencies {
   hasWorkbookAccess: (userId: number) => boolean;
   hasOcrAccess: (userId: number) => boolean;
   hasKmlAccess: (userId: number) => boolean;
-  setUserMode: (userId: number, mode: 'menu' | 'location' | 'rar' | 'workbook' | 'ocr' | 'kml' | null) => void;
+  hasGeotagsAccess: (userId: number) => boolean;
+  setUserMode: (userId: number, mode: 'menu' | 'location' | 'rar' | 'workbook' | 'ocr' | 'kml' | 'geotags' | null) => void;
 }
 
 export const registerMenuCommand = (
   bot: TelegramBot,
   deps: MenuCommandDependencies
 ): void => {
-  const { isUserRegistered, hasLocationAccess, hasRarAccess, hasWorkbookAccess, hasOcrAccess, hasKmlAccess, setUserMode } = deps;
+  const { isUserRegistered, hasLocationAccess, hasRarAccess, hasWorkbookAccess, hasOcrAccess, hasKmlAccess, hasGeotagsAccess, setUserMode } = deps;
 
   bot.onText(/\/menu/, (msg) => {
     const userId = msg.from?.id;
@@ -48,6 +49,10 @@ export const registerMenuCommand = (
     
     if (hasKmlAccess(userId)) {
       availableCommands.push('/kml - Masuk ke mode KML');
+    }
+
+    if (hasGeotagsAccess(userId)) {
+      availableCommands.push('/geotags - Masuk ke mode Geotags');
     }
     
     const menuText = availableCommands.join('\n');

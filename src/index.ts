@@ -10,7 +10,7 @@ config();
 
 // Types
 export interface UserState {
-  mode: 'menu' | 'location' | 'rar' | 'workbook' | 'ocr' | 'kml' | null;
+  mode: 'menu' | 'location' | 'rar' | 'workbook' | 'ocr' | 'kml' | 'geotags' | null;
 }
 
 // Environment variables validation
@@ -56,6 +56,9 @@ const ocrAccessUsers = (process.env.OCR_ACCESS_USERS || '').split(',')
 const kmlAccessUsers = (process.env.KML_ACCESS_USERS || '').split(',')
   .filter(id => id.trim() !== '')
   .map(id => parseInt(id.trim(), 10));
+const geotagsAccessUsers = (process.env.GEOTAGS_ACCESS_USERS || '').split(',')
+  .filter(id => id.trim() !== '')
+  .map(id => parseInt(id.trim(), 10));
 
 // Import feature modules
 import { registerLocationCommands } from './features/location';
@@ -63,6 +66,7 @@ import { registerRarCommands } from './features/rar';
 import { registerWorkbookCommands } from './features/workbook';
 import { registerOcrCommands } from './features/ocr';
 import { registerKmlCommands } from './features/kml';
+import { registerGeotagsCommands } from './features/geotags';
 
 // Authentication middleware
 const isUserRegistered = (userId: number): boolean => {
@@ -88,6 +92,10 @@ const hasOcrAccess = (userId: number): boolean => {
 
 const hasKmlAccess = (userId: number): boolean => {
   return kmlAccessUsers.includes(userId);
+};
+
+const hasGeotagsAccess = (userId: number): boolean => {
+  return geotagsAccessUsers.includes(userId);
 };
 
 // User data directory management
@@ -135,6 +143,7 @@ const startBot = (): void => {
     hasWorkbookAccess,
     hasOcrAccess,
     hasKmlAccess,
+    hasGeotagsAccess,
     setUserMode
   });
 
@@ -179,6 +188,14 @@ const startBot = (): void => {
     ensureUserDataDir
   });
 
+  registerGeotagsCommands(bot, {
+    isUserRegistered,
+    hasGeotagsAccess,
+    getUserMode,
+    setUserMode,
+    ensureUserDataDir
+  });
+
   // Handle unknown commands based on user mode
   bot.on('message', (msg) => {
     const userId = msg.from?.id;
@@ -186,7 +203,7 @@ const startBot = (): void => {
     
     // Skip processing for registered commands or non-text messages
     if (!text || text.startsWith('/start') || text.startsWith('/menu') || 
-        text.startsWith('/lokasi') || text.startsWith('/rar') || text.startsWith('/workbook') || text.startsWith('/ocr') || text.startsWith('/kml') ||
+        text.startsWith('/lokasi') || text.startsWith('/rar') || text.startsWith('/workbook') || text.startsWith('/ocr') || text.startsWith('/kml') || text.startsWith('/geotags') ||
         text.startsWith('/zip') || text.startsWith('/extract') || text.startsWith('/kirim') ||
         text.startsWith('/alamat') || text.startsWith('/koordinat') || text.startsWith('/show_map') ||
         text.startsWith('/search') || text.startsWith('/stats') || text.startsWith('/help') ||
@@ -197,7 +214,9 @@ const startBot = (): void => {
         // KML subcommands
         text.startsWith('/startline') || text.startsWith('/endline') || text.startsWith('/cancelline') ||
         text.startsWith('/add ') || text === '/add' || text.startsWith('/addpoint') || text.startsWith('/alwayspoint') ||
-        text.startsWith('/mydata') || text.startsWith('/createkml') || text.startsWith('/cleardata')) {
+        text.startsWith('/mydata') || text.startsWith('/createkml') || text.startsWith('/cleardata') ||
+        // Geotags subcommands
+        text.startsWith('/alwaystag') || text.startsWith('/set_time')) {
       return;
     }
     
@@ -216,12 +235,14 @@ const startBot = (): void => {
                                           currentMode === 'rar' ? 'Arsip' : 
                                           currentMode === 'workbook' ? 'Workbook' : 
                                           currentMode === 'ocr' ? 'OCR' : 
-                                          currentMode === 'kml' ? 'KML' : 'Menu'}. ` +
+                                          currentMode === 'kml' ? 'KML' :
+                                          currentMode === 'geotags' ? 'Geotags' : 'Menu'}. ` +
         `Gunakan perintah terkait ${currentMode === 'location' ? 'lokasi' : 
                                    currentMode === 'rar' ? 'arsip' : 
                                    currentMode === 'workbook' ? 'workbook' : 
                                    currentMode === 'ocr' ? 'ocr' : 
-                                   currentMode === 'kml' ? 'kml' : 'menu'}.`
+                                   currentMode === 'kml' ? 'kml' :
+                                   currentMode === 'geotags' ? 'geotags' : 'menu'}.`
       );
     }
   });

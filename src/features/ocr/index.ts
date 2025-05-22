@@ -7,8 +7,8 @@ import { ocrSpace, OcrSpaceLanguages } from 'ocr-space-api-wrapper';
 interface OcrCommandDependencies {
   isUserRegistered: (userId: number) => boolean;
   hasOcrAccess: (userId: number) => boolean;
-  getUserMode: (userId: number) => 'menu' | 'location' | 'rar' | 'workbook' | 'ocr' | 'kml' | null;
-  setUserMode: (userId: number, mode: 'menu' | 'location' | 'rar' | 'workbook' | 'ocr' | 'kml' | null) => void;
+  getUserMode: (userId: number) => 'menu' | 'location' | 'rar' | 'workbook' | 'ocr' | 'kml' | 'geotags' | null;
+  setUserMode: (userId: number, mode: 'menu' | 'location' | 'rar' | 'workbook' | 'ocr' | 'kml' | 'geotags' | null) => void;
   ensureUserDataDir: (userId: number) => string;
 }
 

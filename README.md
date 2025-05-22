@@ -37,10 +37,40 @@ Bot Telegram yang dibangun dengan TypeScript, menyediakan berbagai fitur seperti
 - Melihat daftar sheet yang telah dibuat
 
 ### Mode OCR
-- Mengekstrak teks dari gambar
-- Menggunakan OCR dalam Bahasa Inggris
-- Mengenali teks, angka, dan simbol dalam gambar
-- Mudah digunakan tanpa konfigurasi tambahan
+
+1. Ketik `/ocr` untuk masuk ke mode OCR
+2. Kirim gambar yang berisi teks untuk mengekstrak teksnya
+3. Perintah yang tersedia:
+   - `/ocr_clear` - Menghapus semua file OCR yang disimpan
+
+### Mode Geotags
+
+1. Ketik `/geotags` untuk masuk ke mode Geotags
+2. Perintah yang tersedia:
+   - **Mode Standar (1 Foto, 1 Lokasi):**
+     - Kirim foto terlebih dahulu
+     - Kemudian kirim lokasi menggunakan fitur "Location" Telegram
+     - Bot akan otomatis menambahkan geotag ke foto tersebut
+   
+   - **Mode AlwaysTag:**
+     - Ketik `/alwaystag` untuk mengaktifkan mode
+     - Kirim satu lokasi yang akan digunakan untuk semua foto selanjutnya
+     - Ketik `/alwaystag` lagi untuk menonaktifkan mode
+   
+   - **Pengaturan Waktu Manual:**
+     - Gunakan `/set_time YYYY-MM-DD HH:MM`
+     - Contoh: `/set_time 2024-12-25 15:30`
+     - Ketik `/set_time reset` untuk kembali ke waktu saat ini
+
+3. Format Koordinat yang Didukung:
+   - Decimal: -7.257056, 112.648000
+   - DMS (Degrees, Minutes, Seconds): 7°15'25"S, 112°38'52"E
+
+4. Fitur Tambahan:
+   - Visualisasi lokasi dengan Mapbox
+   - Informasi alamat lengkap
+   - Format waktu dalam Bahasa Indonesia
+   - Kualitas gambar yang dioptimalkan
 
 ### Mode KML
 
@@ -185,12 +215,34 @@ KML_ACCESS_USERS=123456789,987654321
    - Ketik "cek" untuk melihat daftar sheet yang telah dibuat
    - Ketik "clear" untuk menghapus semua sheet
 
-### Mode OCR
+### Mode Geotags
 
-1. Ketik `/ocr` untuk masuk ke mode OCR
-2. Kirim gambar yang berisi teks untuk mengekstrak teksnya
-3. Perintah yang tersedia:
-   - `/ocr_clear` - Menghapus semua file OCR yang disimpan
+1. Ketik `/geotags` untuk masuk ke mode Geotags
+2. Perintah yang tersedia:
+   - **Mode Standar (1 Foto, 1 Lokasi):**
+     - Kirim foto terlebih dahulu
+     - Kemudian kirim lokasi menggunakan fitur "Location" Telegram
+     - Bot akan otomatis menambahkan geotag ke foto tersebut
+   
+   - **Mode AlwaysTag:**
+     - Ketik `/alwaystag` untuk mengaktifkan mode
+     - Kirim satu lokasi yang akan digunakan untuk semua foto selanjutnya
+     - Ketik `/alwaystag` lagi untuk menonaktifkan mode
+   
+   - **Pengaturan Waktu Manual:**
+     - Gunakan `/set_time YYYY-MM-DD HH:MM`
+     - Contoh: `/set_time 2024-12-25 15:30`
+     - Ketik `/set_time reset` untuk kembali ke waktu saat ini
+
+3. Format Koordinat yang Didukung:
+   - Decimal: -7.257056, 112.648000
+   - DMS (Degrees, Minutes, Seconds): 7°15'25"S, 112°38'52"E
+
+4. Fitur Tambahan:
+   - Visualisasi lokasi dengan Mapbox
+   - Informasi alamat lengkap
+   - Format waktu dalam Bahasa Indonesia
+   - Kualitas gambar yang dioptimalkan
 
 ## Struktur Proyek
 

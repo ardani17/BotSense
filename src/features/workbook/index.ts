@@ -7,8 +7,8 @@ import ExcelJS from 'exceljs';
 interface WorkbookCommandDependencies {
   isUserRegistered: (userId: number) => boolean;
   hasWorkbookAccess?: (userId: number) => boolean;
-  getUserMode: (userId: number) => 'menu' | 'location' | 'rar' | 'workbook' | 'ocr' | 'kml' | null;
-  setUserMode: (userId: number, mode: 'menu' | 'location' | 'rar' | 'workbook' | 'ocr' | 'kml' | null) => void;
+  getUserMode: (userId: number) => 'menu' | 'location' | 'rar' | 'workbook' | 'ocr' | 'kml' | 'geotags' | null;
+  setUserMode: (userId: number, mode: 'menu' | 'location' | 'rar' | 'workbook' | 'ocr' | 'kml' | 'geotags' | null) => void;
   ensureUserDataDir: (userId: number) => string;
 }
 
